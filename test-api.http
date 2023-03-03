@@ -1,0 +1,20 @@
+POST http://localhost:1234/users
+content-type: application/json
+
+{}
+
+####
+PUT http://localhost:1234/users/1
+content-type: application/json
+
+{}
+####
+PATCH http://localhost:1234/users/1
+content-type: application/json
+
+{}
+####
+DELETE http://localhost:1234/users/1
+content-type: application/json
+
+{}
