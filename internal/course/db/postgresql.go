@@ -31,7 +31,7 @@ func (r *repository) Create(ctx context.Context, course *course.Course) error {
 	return nil
 }
 
-func (r *repository) FindAll(ctx context.Context) (u []course.Course, err error) {
+func (r *repository) FindAll(ctx context.Context) (_ []course.Course, err error) {
 	q := `SELECT id, name FROM public.course;`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	rows, err := r.client.Query(ctx, q)
@@ -67,14 +67,36 @@ func (r *repository) FindOne(ctx context.Context, id string) (course.Course, err
 	return crs, nil
 }
 
-func (r *repository) Update(ctx context.Context, user course.Course) error {
-	//TODO implement me
-	panic("implement me")
+func (r *repository) Update(ctx context.Context, course *course.Course) error {
+	q := `UPDATE public.course SET name = $1 WHERE id = $2;`
+	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
+	if _, err := r.client.Exec(ctx, q, course.Name, course.ID); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.Is(err, pgErr) {
+			pgErr = err.(*pgconn.PgError)
+			newErr := fmt.Errorf(fmt.Sprintf("sql Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s", pgErr.Message, pgErr.Detail, pgErr.Where, pgErr.Code, pgErr.SQLState()))
+			r.logger.Error(newErr)
+			return newErr
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *repository) Delete(ctx context.Context, id string) error {
-	//TODO implement me
-	panic("implement me")
+	q := `DELETE FROM public.course WHERE id = $1;`
+	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
+	if _, err := r.client.Exec(ctx, q, id); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.Is(err, pgErr) {
+			pgErr = err.(*pgconn.PgError)
+			newErr := fmt.Errorf(fmt.Sprintf("sql Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s", pgErr.Message, pgErr.Detail, pgErr.Where, pgErr.Code, pgErr.SQLState()))
+			r.logger.Error(newErr)
+			return newErr
+		}
+		return err
+	}
+	return nil
 }
 
 func NewRepository(client postrgresql.Client, logger *logging.Logger) course.Repository {

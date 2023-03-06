@@ -1,7 +1,12 @@
 package lesson
 
-import "context"
+import (
+	"context"
+)
 
 type Repository interface {
-	FindAll(ctx context.Context) (u []Lesson, err error)
+	FindAll(ctx context.Context) (lesson []Lesson, err error)
+	TranslateLessonName(ctx context.Context, name string, lang string) (string, error)
+	FindOne(ctx context.Context, id string) (Lesson, error)
+	Update(ctx context.Context, lesson *Lesson) error
 }
