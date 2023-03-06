@@ -10,12 +10,15 @@ import (
 	"github.com/jackc/pgconn"
 )
 
-type repository struct {
+type repositoryCourse struct {
 	client postrgresql.Client
 	logger *logging.Logger
 }
 
-func (r *repository) Create(ctx context.Context, course *course.Course) error {
+func NewRepositoryCourse(client postrgresql.Client, logger *logging.Logger) course.Repository {
+	return &repositoryCourse{client: client, logger: logger}
+}
+func (r *repositoryCourse) Create(ctx context.Context, course *course.Course) error {
 	q := `INSERT INTO course (name) VALUES ($1) RETURNING id`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	if err := r.client.QueryRow(ctx, q, course.Name).Scan(&course.ID); err != nil {
@@ -31,7 +34,7 @@ func (r *repository) Create(ctx context.Context, course *course.Course) error {
 	return nil
 }
 
-func (r *repository) FindAll(ctx context.Context) (_ []course.Course, err error) {
+func (r *repositoryCourse) FindAll(ctx context.Context) (_ []course.Course, err error) {
 	q := `SELECT id, name FROM public.course;`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	rows, err := r.client.Query(ctx, q)
@@ -56,7 +59,7 @@ func (r *repository) FindAll(ctx context.Context) (_ []course.Course, err error)
 	return courses, nil
 }
 
-func (r *repository) FindOne(ctx context.Context, id string) (course.Course, error) {
+func (r *repositoryCourse) FindOne(ctx context.Context, id string) (course.Course, error) {
 	q := `SELECT id, name FROM public.course where id = $1;`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	var crs course.Course
@@ -67,7 +70,7 @@ func (r *repository) FindOne(ctx context.Context, id string) (course.Course, err
 	return crs, nil
 }
 
-func (r *repository) Update(ctx context.Context, course *course.Course) error {
+func (r *repositoryCourse) Update(ctx context.Context, course *course.Course) error {
 	q := `UPDATE public.course SET name = $1 WHERE id = $2;`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	if _, err := r.client.Exec(ctx, q, course.Name, course.ID); err != nil {
@@ -83,7 +86,7 @@ func (r *repository) Update(ctx context.Context, course *course.Course) error {
 	return nil
 }
 
-func (r *repository) Delete(ctx context.Context, id string) error {
+func (r *repositoryCourse) Delete(ctx context.Context, id string) error {
 	q := `DELETE FROM public.course WHERE id = $1;`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	if _, err := r.client.Exec(ctx, q, id); err != nil {
@@ -97,8 +100,4 @@ func (r *repository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	return nil
-}
-
-func NewRepository(client postrgresql.Client, logger *logging.Logger) course.Repository {
-	return &repository{client: client, logger: logger}
 }

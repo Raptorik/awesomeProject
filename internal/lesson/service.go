@@ -16,30 +16,12 @@ func NewService(repository Repository, logger *logging.Logger) *Service {
 		logger:     logger,
 	}
 }
-func (s *Service) TranslateLessonName(ctx context.Context, lessonID string) error {
-	lesson, err := s.repository.FindOne(ctx, lessonID)
+func (s *Service) TranslateLessonName(ctx context.Context, name string, lang string) (string, error) {
+	translatedName, err := s.repository.TranslateLessonName(ctx, name, lang)
 	if err != nil {
-		return err
+		return "", err
 	}
-
-	if lesson.Language == "en" {
-		// no need to translate
-		return nil
-	}
-
-	// translate lesson name
-	translatedName, err := s.repository.TranslateLessonName(ctx, lesson.Name, lesson.Language)
-	if err != nil {
-		return err
-	}
-
-	// update repository with translated name
-	lesson.TranslatedName = translatedName
-	if err := s.repository.Update(ctx, &lesson); err != nil {
-		return err
-	}
-
-	return nil
+	return translatedName, nil
 }
 
 func (s *Service) FindAll(ctx context.Context) ([]Lesson, error) {

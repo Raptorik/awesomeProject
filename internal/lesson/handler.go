@@ -52,13 +52,28 @@ func (h *handler) TranslateLessonName(w http.ResponseWriter, r *http.Request) er
 	params := httprouter.ParamsFromContext(r.Context())
 	lessonID := params.ByName("id")
 
-	err := h.repository.TranslateLessonName(r.Context(), lessonID)
+	lesson, err := h.repository.FindOne(r.Context(), lessonID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("failed to translate lesson name: %v", err)))
 		return nil
 	}
-
+	if lesson.Language == "en" {
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+	translatedName, err := h.repository.TranslateLessonName(r.Context(), lesson.Name, lesson.Language)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("failed to translate lesson name: %v", err)))
+		return nil
+	}
+	lesson.TranslatedName = translatedName
+	if err := h.repository.Update(r.Context(), &lesson); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("failed to update lesson: %v", err)))
+		return nil
+	}
 	w.WriteHeader(http.StatusOK)
 	return nil
 }

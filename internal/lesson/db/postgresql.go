@@ -1,4 +1,4 @@
-package lesson
+package lesson2
 
 import (
 	"awesomeProject/internal/course"
@@ -14,18 +14,15 @@ import (
 	"net/http"
 )
 
-type repository struct {
+type repositoryLesson struct {
 	client postrgresql.Client
 	logger *logging.Logger
 }
 
-func NewRepository(client postrgresql.Client, logger *logging.Logger) lesson.Repository {
-	return &repository{
-		client: client,
-		logger: logger,
-	}
+func NewRepositoryLesson(client postrgresql.Client, logger *logging.Logger) lesson.Repository {
+	return &repositoryLesson{client: client, logger: logger}
 }
-func (r *repository) FindAll(ctx context.Context) (_ []lesson.Lesson, err error) {
+func (r *repositoryLesson) FindAll(ctx context.Context) (_ []lesson.Lesson, err error) {
 	q := `SELECT id, name, language FROM public.lesson;`
 
 	rows, err := r.client.Query(ctx, q)
@@ -41,7 +38,7 @@ func (r *repository) FindAll(ctx context.Context) (_ []lesson.Lesson, err error)
 		if err != nil {
 			return nil, err
 		}
-		sq := `SELECT course_id, name FROM student JOIN course a on a.id = student.course_id = a.id WHERE lesson_id =$1;`
+		sq := `SELECT course_id, name FROM student JOIN course a on a.id = student.course_id AND a.id = student.course_id WHERE lesson_id =$1;`
 		coursesRows, err := r.client.Query(ctx, sq, lsn.ID)
 		if err != nil {
 			return nil, err
@@ -66,8 +63,8 @@ func (r *repository) FindAll(ctx context.Context) (_ []lesson.Lesson, err error)
 	}
 	return lessons, nil
 }
-func (r *repository) TranslateLessonName(ctx context.Context, name string, lang string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("https://translation.googleapis.com/language/translate/v2?key=%s&target=%s&q=%s", "https://awesome-project@ecstatic-baton-379809.iam.gserviceaccount.com", lang, name))
+func (r *repositoryLesson) TranslateLessonName(ctx context.Context, name string, lang string) (string, error) {
+	resp, err := http.Get(fmt.Sprintf("https://translation.googleapis.com/language/translate/v2?key=%s&target=%s&q=%s", "AIzaSyB4TPzuXJNY31cvAc4l5xEO9A3wACthmNE", lang, name))
 	if err != nil {
 		return "", err
 	}
@@ -94,7 +91,7 @@ func (r *repository) TranslateLessonName(ctx context.Context, name string, lang 
 	return result.Data.Translations[0].TranslatedText, nil
 }
 
-func (r *repository) FindOne(ctx context.Context, id string) (lesson.Lesson, error) {
+func (r *repositoryLesson) FindOne(ctx context.Context, id string) (lesson.Lesson, error) {
 	q := `SELECT id, name, translated_name, language FROM public.lesson WHERE id = $1;`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	var lsn lesson.Lesson
@@ -102,7 +99,7 @@ func (r *repository) FindOne(ctx context.Context, id string) (lesson.Lesson, err
 	if err != nil {
 		return lesson.Lesson{}, err
 	}
-	sq := `SELECT course_id, name FROM student JOIN course a on a.id = student.course_id = a.id WHERE lesson_id = $1;`
+	sq := `SELECT course_id, name FROM student JOIN course a ON student.course_id = a.id WHERE lesson_id = $1;`
 	coursesRows, err := r.client.Query(ctx, sq, lsn.ID)
 	if err != nil {
 		return lesson.Lesson{}, err
@@ -120,7 +117,7 @@ func (r *repository) FindOne(ctx context.Context, id string) (lesson.Lesson, err
 	lsn.Courses = courses
 	return lsn, nil
 }
-func (r *repository) Update(ctx context.Context, lesson *lesson.Lesson) error {
+func (r *repositoryLesson) Update(ctx context.Context, lesson *lesson.Lesson) error {
 	q := `UPDATE public.lesson SET translated_name = $1 WHERE id = $2;`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	if _, err := r.client.Exec(ctx, q, lesson.TranslatedName, lesson.ID); err != nil {
