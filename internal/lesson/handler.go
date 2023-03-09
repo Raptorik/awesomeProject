@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -15,6 +16,8 @@ import (
 type handler struct {
 	logger     *logging.Logger
 	repository Repository
+	db         *pgxpool.Pool
+	translator translation_lesson.Translator
 }
 
 func NewHandler(repository Repository, translator *translation_lesson.GoogleTranslator, logger *logging.Logger) handlers.Handler {
@@ -75,19 +78,7 @@ func (h *handler) UpdateLesson(w http.ResponseWriter, r *http.Request) error {
 
 	lessonID := chi.URLParam(r, "id")
 
-	lesson, err := h.repository.FindOne(ctx, lessonID)
-	if err != nil {
-		h.logger.Errorf("failed to fetch lesson with ID %s: %v", lessonID, err)
-		return fmt.Errorf("lesson not found")
-	}
-
-	googleTranslator, err := translation_lesson.NewGoogleTranslator("YOUR_API_KEY_HERE")
-	if err != nil {
-		h.logger.Errorf("failed to create Google translator: %v", err)
-		return fmt.Errorf("failed to create Google translator")
-	}
-
-	err = translation_lesson.TranslateLessonName(lesson, "ukr", googleTranslator)
+	err := translation_lesson.TranslateLessonName(h.db, lessonID, "ukr", h.translator)
 	if err != nil {
 		h.logger.Errorf("failed to translate lesson name: %v", err)
 		return fmt.Errorf("failed to translate lesson name")
@@ -98,6 +89,12 @@ func (h *handler) UpdateLesson(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		h.logger.Errorf("failed to decode request body: %v", err)
 		return fmt.Errorf("invalid request payload")
+	}
+
+	lesson, err := h.repository.FindOne(ctx, lessonID)
+	if err != nil {
+		h.logger.Errorf("failed to fetch lesson with ID %s: %v", lessonID, err)
+		return fmt.Errorf("lesson not found")
 	}
 
 	lesson.Name = updatedLesson.Name
