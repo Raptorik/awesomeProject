@@ -1,4 +1,4 @@
-package course
+package db
 
 import (
 	"awesomeProject/internal/course"

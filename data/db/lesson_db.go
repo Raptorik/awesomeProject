@@ -1,4 +1,4 @@
-package lesson2
+package db
 
 import (
 	"awesomeProject/internal/course"
@@ -6,12 +6,9 @@ import (
 	"awesomeProject/pkg/client/postrgresql"
 	"awesomeProject/pkg/logging"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgconn"
-	"io/ioutil"
-	"net/http"
 )
 
 type repositoryLesson struct {
@@ -34,7 +31,7 @@ func (r *repositoryLesson) FindAll(ctx context.Context) (_ []lesson.Lesson, err 
 
 	for rows.Next() {
 		var lsn lesson.Lesson
-		err = rows.Scan(&lsn.ID, &lsn.Name, &lsn.Language)
+		err = rows.Scan(&lsn.ID, &lsn.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -63,39 +60,12 @@ func (r *repositoryLesson) FindAll(ctx context.Context) (_ []lesson.Lesson, err 
 	}
 	return lessons, nil
 }
-func (r *repositoryLesson) TranslateLessonName(ctx context.Context, name string, lang string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("https://translation.googleapis.com/language/translate/v2?key=%s&target=%s&q=%s", "AIzaSyB4TPzuXJNY31cvAc4l5xEO9A3wACthmNE", lang, name))
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	var result struct {
-		Data struct {
-			Translations []struct {
-				TranslatedText string `json:"translatedText"`
-			} `json:"translations"`
-		} `json:"data"`
-	}
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return "", err
-	}
-	if len(result.Data.Translations) == 0 {
-		return "", fmt.Errorf("no translations found")
-	}
-	return result.Data.Translations[0].TranslatedText, nil
-}
 
 func (r *repositoryLesson) FindOne(ctx context.Context, id string) (lesson.Lesson, error) {
 	q := `SELECT id, name, translated_name, language FROM public.lesson WHERE id = $1;`
 	r.logger.Tracef(fmt.Sprintf("SQL Query: %s", q))
 	var lsn lesson.Lesson
-	err := r.client.QueryRow(ctx, q, id).Scan(&lsn.ID, &lsn.Name, &lsn.TranslatedName, &lsn.Language)
+	err := r.client.QueryRow(ctx, q, id).Scan(&lsn.ID, &lsn.Name, &lsn.TranslatedName)
 	if err != nil {
 		return lesson.Lesson{}, err
 	}

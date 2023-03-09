@@ -6,7 +6,6 @@ import (
 
 type Repository interface {
 	FindAll(ctx context.Context) (lesson []Lesson, err error)
-	TranslateLessonName(ctx context.Context, name string, lang string) (string, error)
 	FindOne(ctx context.Context, id string) (Lesson, error)
 	Update(ctx context.Context, lesson *Lesson) error
 }

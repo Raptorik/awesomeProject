@@ -1,11 +1,10 @@
 package main
 
 import (
+	"awesomeProject/data/db"
 	"awesomeProject/internal/config"
-	course2 "awesomeProject/internal/course"
-	course "awesomeProject/internal/course/db"
+	"awesomeProject/internal/course"
 	"awesomeProject/internal/lesson"
-	lesson2 "awesomeProject/internal/lesson/db"
 	"awesomeProject/pkg/client/postrgresql"
 	"awesomeProject/pkg/logging"
 	"context"
@@ -30,28 +29,29 @@ func main() {
 		logger.Fatalf("%v", err)
 	}
 
-	repositoryCourse := course.NewRepositoryCourse(postgreSQLClient, logger)
+	repositoryCourse := db.NewRepositoryCourse(postgreSQLClient, logger)
 
 	logger.Info("register course handler")
-	courseHandler := course2.NewHandler(repositoryCourse, logger)
+	courseHandler := course.NewHandler(repositoryCourse, logger)
 	courseHandler.Register(router)
 
 	logger.Info("register create course handler")
-	createHandler := course2.NewHandler(repositoryCourse, logger)
+	createHandler := course.NewHandler(repositoryCourse, logger)
 	createHandler.Register(router)
 
 	logger.Info("register update course handler")
-	updateHandler := course2.NewHandler(repositoryCourse, logger)
+	updateHandler := course.NewHandler(repositoryCourse, logger)
 	updateHandler.Register(router)
 
 	logger.Info("register delete course handler")
-	deleteHandler := course2.NewHandler(repositoryCourse, logger)
+	deleteHandler := course.NewHandler(repositoryCourse, logger)
 	deleteHandler.Register(router)
 
-	logger.Info("register translate lessons' names")
-	repositoryLesson := lesson2.NewRepositoryLesson(postgreSQLClient, logger)
-	lessonHandler := lesson.NewHandler(repositoryLesson, logger)
-	lessonHandler.Register(router)
+	repositoryLesson := db.NewRepositoryLesson(postgreSQLClient, logger)
+
+	logger.Info("register update lesson handler")
+	lessonUpdateHandler := lesson.NewHandler(repositoryLesson, logger)
+	lessonUpdateHandler.Register(router)
 
 	start(router, cfg)
 }

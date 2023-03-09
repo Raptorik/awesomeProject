@@ -1,0 +1,43 @@
+create table public.student(
+    name varchar(100) not null,
+    lesson_id uuid not null,
+    course_id uuid not null,
+    constraint course_fk foreign key (course_id) references public.course(id),
+    constraint lesson_fk foreign key (lesson_id) references public.lesson(id)
+);
+
+create table public.course (
+    id uuid primary key default gen_random_uuid(),
+    name varchar(100) not null
+);
+
+create table public.lesson (
+  id uuid primary key default gen_random_uuid(),
+  name varchar(100) not null,
+  language varchar(100),
+  course_id uuid not null,
+  constraint course_fk foreign key (course_id) references public.course(id)
+
+
+);
+
+insert into course (name) VALUES ('Maksim Morozov'); --- f8ab116f-67a6-45e6-97e9-3db2b25fcf35
+insert into course (name) VALUES ('Viktor Rezun'); --- 728aafd3-90f3-4bde-b5d7-420fb2bb163b
+insert into course (name) VALUES ('Nasim Taleb'); --- c6697437-a7a8-4c1c-aa72-66fee763297d
+
+insert into lesson (name, language, course_id) VALUES ('Golang beginner course', 'english', 'f8ab116f-67a6-45e6-97e9-3db2b25fcf35');
+insert into lesson (name, language, course_id) VALUES ('Soviet military intelligence course', 'english', '728aafd3-90f3-4bde-b5d7-420fb2bb163b');
+insert into lesson (name, language, course_id) VALUES ('Чёрный лебедь', 'russian', 'f8ab116f-67a6-45e6-97e9-3db2b25fcf35');
+
+insert into student (name, lesson_id, course_id) VALUES ('Roman Yankin', 'a560cd74-e08e-4d81-98a8-dda9847fcb0d', 'f8ab116f-67a6-45e6-97e9-3db2b25fcf35');
+insert into student (name, lesson_id, course_id) VALUES ('Roman Yankin', 'a02ce509-9cdc-49e3-91db-ae0443d55758', '728aafd3-90f3-4bde-b5d7-420fb2bb163b');
+insert into student (name, lesson_id, course_id) VALUES ('Galyna Yankina', 'df10c2af-aadc-43cb-a778-f4c395f6fbad', 'c6697437-a7a8-4c1c-aa72-66fee763297d');
+
+
+
+
+
+
+
+
+
