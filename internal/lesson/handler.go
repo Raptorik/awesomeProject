@@ -17,7 +17,7 @@ type handler struct {
 	repository Repository
 }
 
-func NewHandler(repository Repository, logger *logging.Logger) handlers.Handler {
+func NewHandler(repository Repository, translator *translation_lesson.GoogleTranslator, logger *logging.Logger) handlers.Handler {
 	return &handler{
 		repository: repository,
 		logger:     logger,
@@ -81,7 +81,13 @@ func (h *handler) UpdateLesson(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("lesson not found")
 	}
 
-	err = translation_lesson.TranslateLessonName(lesson, "ukr")
+	googleTranslator, err := translation_lesson.NewGoogleTranslator("YOUR_API_KEY_HERE")
+	if err != nil {
+		h.logger.Errorf("failed to create Google translator: %v", err)
+		return fmt.Errorf("failed to create Google translator")
+	}
+
+	err = translation_lesson.TranslateLessonName(lesson, "ukr", googleTranslator)
 	if err != nil {
 		h.logger.Errorf("failed to translate lesson name: %v", err)
 		return fmt.Errorf("failed to translate lesson name")
