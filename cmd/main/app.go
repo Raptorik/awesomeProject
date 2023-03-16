@@ -25,11 +25,6 @@ func main() {
 	router := httprouter.New()
 	cfg := config.GetConfig()
 
-	err := os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", cfg.GoogleCredentialsFile)
-	if err != nil {
-		return
-	}
-
 	postgreSQLClient, err := postrgresql.NewClient(context.TODO(), 3, cfg.Storage)
 	if err != nil {
 		logger.Fatalf("%v", err)

@@ -14,8 +14,8 @@ type Config struct {
 		Port   string `yaml:"port" env-required:"8080"`
 	} `yaml:"listen"`
 	Storage               StorageConfig `yaml:"storage"`
-	GoogleAPIKey          string        `mapstructure:"google_api_key"`
-	GoogleCredentialsFile string        `mapstructure:"google_credentials_file"`
+	GoogleAPIKey          string        `yaml:"google_api_key"`
+	GoogleCredentialsFile string        `yaml:"google_credentials_file"`
 }
 
 type StorageConfig struct {
