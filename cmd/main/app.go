@@ -1,10 +1,11 @@
 package main
 
 import (
-	"awesomeProject/data/db"
 	"awesomeProject/internal/config"
-	"awesomeProject/internal/course"
-	"awesomeProject/internal/lesson"
+	"awesomeProject/internal/entities/course"
+	"awesomeProject/internal/entities/course/repository"
+	"awesomeProject/internal/entities/lesson"
+	repository2 "awesomeProject/internal/entities/lesson/repository"
 	"awesomeProject/pkg/client/postrgresql"
 	"awesomeProject/pkg/logging"
 	translation_lesson "awesomeProject/pkg/translation"
@@ -21,30 +22,28 @@ import (
 
 func main() {
 	logger := logging.GetLogger()
-	logger.Info("create router")
 	router := httprouter.New()
-
 	cfg := config.GetConfig()
+
+	err := os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", cfg.GoogleCredentialsFile)
+	if err != nil {
+		return
+	}
 
 	postgreSQLClient, err := postrgresql.NewClient(context.TODO(), 3, cfg.Storage)
 	if err != nil {
 		logger.Fatalf("%v", err)
 	}
-	translator, err := translation_lesson.NewGoogleTranslator("AIzaSyB4TPzuXJNY31cvAc4l5xEO9A3wACthmNE")
+	translator, err := translation_lesson.NewGoogleTranslator(cfg.GoogleCredentialsFile)
 	if err != nil {
 		logger.Fatalf("failed to initialize translator: %v", err)
 	}
 
-	repositoryCourse := db.NewRepositoryCourse(postgreSQLClient, logger)
-	repositoryLesson := db.NewRepositoryLesson(postgreSQLClient, logger)
+	repositoryCourse := repository.NewRepositoryCourse(postgreSQLClient, logger)
+	repositoryLesson := repository2.NewRepositoryLesson(postgreSQLClient, logger)
 
-	logger.Info("register course handler")
-	courseHandler := course.NewHandler(repositoryCourse, logger)
-	courseHandler.Register(router)
-
-	logger.Info("register update lesson handler")
-	lessonUpdateHandler := lesson.NewHandler(repositoryLesson, translator, logger)
-	lessonUpdateHandler.Register(router)
+	course.NewHandler(repositoryCourse, logger).Register(router)
+	lesson.NewHandler(repositoryLesson, translator, logger).Register(router)
 
 	start(router, cfg)
 }

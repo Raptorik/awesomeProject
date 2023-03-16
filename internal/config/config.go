@@ -13,7 +13,9 @@ type Config struct {
 		BindIP string `yaml:"bind_ip" env-default:"127.0.0.1"`
 		Port   string `yaml:"port" env-required:"8080"`
 	} `yaml:"listen"`
-	Storage StorageConfig `yaml:"storage"`
+	Storage               StorageConfig `yaml:"storage"`
+	GoogleAPIKey          string        `mapstructure:"google_api_key"`
+	GoogleCredentialsFile string        `mapstructure:"google_credentials_file"`
 }
 
 type StorageConfig struct {

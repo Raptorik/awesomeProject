@@ -1,5 +1,3 @@
----
-
 is_debug: true
 listen:
   type: port
@@ -10,5 +8,5 @@ storage:
   database: postgres
   username: postgres
   password: postgres
-
-
+google_api_key: AIzaSyB4TPzuXJNY31cvAc4l5xEO9A3wACthmNE
+google_credentials_file: default_credentials.json

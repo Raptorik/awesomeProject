@@ -1,12 +1,13 @@
 package translation_lesson
 
 import (
+	"cloud.google.com/go/translate"
 	"context"
 	"fmt"
-
-	"cloud.google.com/go/translate"
+	"golang.org/x/oauth2/google"
 	"golang.org/x/text/language"
 	"google.golang.org/api/option"
+	"io/ioutil"
 )
 
 type Translator interface {
@@ -17,14 +18,25 @@ type GoogleTranslator struct {
 	client *translate.Client
 }
 
-func NewGoogleTranslator(apiKey string) (*GoogleTranslator, error) {
+func NewGoogleTranslator(credentialsFile string) (*GoogleTranslator, error) {
 	ctx := context.Background()
 
-	client, err := translate.NewClient(ctx, option.WithAPIKey(apiKey))
+	creds, err := ioutil.ReadFile(credentialsFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read credentials file: %v", err)
+	}
+
+	jwtConfig, err := google.JWTConfigFromJSON(creds, translate.Scope)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create JWT config: %v", err)
+	}
+
+	httpClient := jwtConfig.Client(ctx)
+
+	client, err := translate.NewClient(ctx, option.WithHTTPClient(httpClient))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create translation client: %v", err)
 	}
-
 	return &GoogleTranslator{client: client}, nil
 }
 

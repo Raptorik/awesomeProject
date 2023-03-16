@@ -1,8 +1,6 @@
 package translation_lesson
 
 import (
-	"awesomeProject/internal/config"
-	"awesomeProject/pkg/client/postrgresql"
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v4"
@@ -10,21 +8,6 @@ import (
 	"log"
 )
 
-var db *pgxpool.Pool
-
-func init() {
-	var err error
-	db, err = postrgresql.NewClient(context.Background(), 3, config.StorageConfig{
-		Username: "postgres",
-		Password: "postgres",
-		Host:     "localhost",
-		Port:     "5432",
-		Database: "postgres",
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 func TranslateLessonName(db *pgxpool.Pool, lessonID string, lang string, translator Translator) error {
 	rows := db.QueryRow(context.Background(), "SELECT name, translated_name FROM public.lesson WHERE id=$1 AND language=$2", lessonID, lang)
 
