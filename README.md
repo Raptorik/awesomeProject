@@ -1,13 +1,22 @@
 The program initializes a router using the http router package and gets the configuration settings. It creates a PostgreSQL client and initializes a Google translator for translating lessons. It registers the appropriate handlers with the router and starts the HTTP server.
-
 The program provides custom error handling through the apperror package, a middleware function that wraps the appHandler function to handle errors and return appropriate HTTP responses. It also provides repository implementations for Course and Lesson entities that interact with a PostgreSQL database.
-
 Each entity has its own handler, model, service, and storage logic implemented in respective files and directories.
-
 In summary, the program is a web application with flexible and modular code that can be extended or replaced as needed. It has custom error handling and interacts with a PostgreSQL database for storage.
 
+# This is the description of SOLID principles in this project
 
 
+**Single Responsibility Principle (SRP)** - You have separated the concerns of each component in your project, such as the database layer, handler layer, and service layer, into different packages and interfaces, so each component has a single, well-defined responsibility. For example, the course.handler package is responsible for handling HTTP requests and responses related to course entities, while the course.service package is responsible for providing business logic related to course entities.
+
+**Open/Closed Principle (OCP)** - You have implemented the OCP by using interfaces for certain components in your project, such as the Repository interface for database operations. This allows for the implementation of these components to be easily changed or extended without affecting other parts of the project.
+
+**Liskov Substitution Principle (LSP)** - You have used Go's type system to ensure that objects of different types can be used interchangeably in your code. For example, the course.Service and lesson.Service both implement the Repository interface, so they can be used interchangeably in other parts of the project.
+
+**Interface Segregation Principle (ISP)** - You have used small, specific interfaces in your project, such as the Repository interface, which only defines the methods that are needed for a specific component. This ensures that a component only needs to implement the methods that it needs, rather than a larger, more general interface.
+
+**Dependency Inversion Principle (DIP)** - You have inverted the dependency of high-level components on low-level components by using interfaces and dependency injection. For example, the course.handler package depends on the course.service package, but not the other way around. This allows for the implementation of the course.service package to be changed or extended without affecting the course.handler package.
+
+Here is detailed description for each file
 
 **app.go**
 The main function initializes a router using the http router package and gets the configuration settings.
