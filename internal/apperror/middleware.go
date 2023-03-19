@@ -21,10 +21,11 @@ func Middleware(h appHandler) http.HandlerFunc {
 				}
 				err = err.(*AppError)
 				w.WriteHeader(http.StatusBadRequest)
-				w.Write(ErrNotFound.Marshal())
+				w.Write(appErr.Marshal()) // fix here
+			} else {
+				w.WriteHeader(http.StatusTeapot)
+				w.Write(SystemError(err).Marshal())
 			}
-			w.WriteHeader(http.StatusTeapot)
-			w.Write(systemError(err).Marshal())
 		}
 	}
 }

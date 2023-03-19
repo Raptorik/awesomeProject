@@ -2,7 +2,7 @@ package repository
 
 import (
 	course2 "awesomeProject/internal/entities/course"
-	"awesomeProject/pkg/client/postrgresql"
+	"awesomeProject/pkg/client/postgresql"
 	"awesomeProject/pkg/logging"
 	"context"
 	"errors"
@@ -11,11 +11,11 @@ import (
 )
 
 type repositoryCourse struct {
-	client postrgresql.Client
+	client postgresql.Client
 	logger *logging.Logger
 }
 
-func NewRepositoryCourse(client postrgresql.Client, logger *logging.Logger) course2.Repository {
+func NewRepositoryCourse(client postgresql.Client, logger *logging.Logger) course2.Repository {
 	return &repositoryCourse{client: client, logger: logger}
 }
 func (r *repositoryCourse) Create(ctx context.Context, course *course2.Course) error {

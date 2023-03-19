@@ -3,7 +3,7 @@ package repository
 import (
 	"awesomeProject/internal/entities/course"
 	lesson2 "awesomeProject/internal/entities/lesson"
-	"awesomeProject/pkg/client/postrgresql"
+	"awesomeProject/pkg/client/postgresql"
 	"awesomeProject/pkg/logging"
 	"context"
 	"errors"
@@ -12,11 +12,11 @@ import (
 )
 
 type repositoryLesson struct {
-	client postrgresql.Client
+	client postgresql.Client
 	logger *logging.Logger
 }
 
-func NewRepositoryLesson(client postrgresql.Client, logger *logging.Logger) lesson2.Repository {
+func NewRepositoryLesson(client postgresql.Client, logger *logging.Logger) lesson2.Repository {
 	return &repositoryLesson{client: client, logger: logger}
 }
 func (r *repositoryLesson) FindAll(ctx context.Context) (_ []lesson2.Lesson, err error) {

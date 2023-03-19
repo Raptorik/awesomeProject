@@ -1,0 +1,1 @@
+time="2023-03-19T11:52:32+02:00" level=info msg="Test message" func="awesomeProject/pkg/logging.TestGetLogger.func1()" file="logging_test.go;30"
